@@ -1,0 +1,123 @@
+html_template = '''<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Price Predictor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: navy;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            color: black;
+        }
+        h1 {
+            text-align: center;
+            color: navy;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: navy;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-transform: uppercase;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #003366;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>House Price Predictor</h1>
+        <form id="predict-form">
+            <div class="form-group">
+                <label for="size">Size (Number of Bedrooms):</label>
+                <input type="number" id="size" name="size" required>
+            </div>
+            <div class="form-group">
+                <label for="total_sqft">Total Area (in sqft):</label>
+                <input type="number" id="total_sqft" name="total_sqft" required>
+            </div>
+            <div class="form-group">
+                <label for="bath">Number of Bathrooms:</label>
+                <input type="number" id="bath" name="bath" required>
+            </div>
+            <div class="form-group">
+                <label for="balcony">Number of Balconies:</label>
+                <input type="number" id="balcony" name="balcony" required>
+            </div>
+            <div class="form-group">
+                <label for="location_name">Location Name:</label>
+                <input type="text" id="location_name" name="location_name" required>
+            </div>
+            <button type="submit">Predict Price</button>
+        </form>
+        <div id="result" style="margin-top: 20px; font-size: 16px; display: none;">
+            <strong>Prediction Results:</strong>
+            <div id="prediction-output"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('predict-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const form = new FormData(event.target);
+            const formData = Object.fromEntries(form.entries());
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const result = await response.json();
+                if (result.error) {
+                    document.getElementById('prediction-output').innerText = result.error;
+                } else {
+                    document.getElementById('prediction-output').innerHTML = `
+                        <p>Location: ${result.location}</p>
+                        <p>Area: ${result.area_sqft} sq.ft</p>
+                        <p>Average Price per sq.ft in this location: ₹${result.location_avg_price_per_sqft.toFixed(2)}</p>
+                        <p>Predicted Price per sq.ft: ₹${result.predicted_price_per_sqft.toFixed(2)}</p>
+                        <p>Predicted Total Price: ₹${result.predicted_total_price.toFixed(2)}</p>`;
+                }
+                document.getElementById('result').style.display = 'block';
+            } catch (err) {
+                console.error(err);
+            }
+        });
+    </script>
+</body>
+</html>
+'''
+
+# Save the HTML template
+with open('templates/index.html', 'w') as f:
+    f.write(html_template)
